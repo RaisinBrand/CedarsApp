@@ -117,7 +117,7 @@ const AppTitle = () => (
 // Refresh Button Component
 const RefreshButton = ({ onPress }: { onPress: () => void }) => (
   <TouchableOpacity style={styles.button} onPress={onPress}>
-    <Text style={styles.buttonText}>Clear Graph</Text>
+    <Text style={styles.buttonText}>Clear Graph</Text> 
   </TouchableOpacity>
 );
 
@@ -127,7 +127,7 @@ export default function App() {
   const [lastUpdate, setLastUpdate] = useState<string>('');
 
   // Update this to your computer's IP address
-  const SERVER_URL = 'http://172.20.10.15:8080/emg';
+  const SERVER_URL = 'http://172.20.10.15:8080/emg'; // hotspot laptop IP address is 172.20.10.15; 
 
   useEffect(() => {
     const fetchData = async () => {
