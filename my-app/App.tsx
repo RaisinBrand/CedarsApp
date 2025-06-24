@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   SafeAreaView,
   View,
@@ -7,33 +7,99 @@ import {
   StyleSheet,
   StatusBar,
   Platform,
-  ScrollView,
 } from 'react-native';
 
-// Simple Graph Component
+// Line Graph Component
 const LiveGraph = ({ dataPoints }: { dataPoints: number[] }) => {
   const maxValue = Math.max(...dataPoints, 1);
   const minValue = Math.min(...dataPoints, 0);
   const range = maxValue - minValue || 1;
+  const graphHeight = 200;
+  const graphWidth = 300;
+
+  const getYPosition = (value: number) => {
+    return graphHeight - ((value - minValue) / range) * graphHeight;
+  };
+
+  const getXPosition = (index: number) => {
+    return (index / (dataPoints.length - 1)) * graphWidth;
+  };
 
   return (
     <View style={styles.graphContainer}>
-      <View style={styles.graph}>
-        {dataPoints.map((point, index) => {
-          const height = ((point - minValue) / range) * 100;
-          return (
+      <View style={styles.graphWrapper}>
+        <View style={styles.graph}>
+          {/* Grid lines */}
+          {[0, 25, 50, 75, 100].map((tick) => (
             <View
-              key={index}
+              key={tick}
               style={[
-                styles.bar,
+                styles.gridLine,
                 {
-                  height: `${height}%`,
-                  backgroundColor: `hsl(${200 + (point / 100) * 60}, 70%, 50%)`,
+                  top: graphHeight - (tick / 100) * graphHeight,
                 },
               ]}
             />
-          );
-        })}
+          ))}
+          {/* Y-axis labels */}
+          <View style={styles.yAxisLabels}>
+            {[100, 75, 50, 25, 0].map((label) => (
+              <Text key={label} style={styles.yAxisLabel}>
+                {label}mV
+              </Text>
+            ))}
+          </View>
+          {/* Line graph */}
+          <View style={styles.lineContainer}>
+            {dataPoints.length > 1 && (
+              <View style={styles.lineGraph}>
+                {dataPoints.map((point, index) => {
+                  if (index === 0) return null;
+                  const prevPoint = dataPoints[index - 1];
+                  const x1 = getXPosition(index - 1);
+                  const y1 = getYPosition(prevPoint);
+                  const x2 = getXPosition(index);
+                  const y2 = getYPosition(point);
+                  // Calculate line angle and length
+                  const angle = Math.atan2(y2 - y1, x2 - x1);
+                  const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                  return (
+                    <View
+                      key={index}
+                      style={[
+                        styles.lineSegment,
+                        {
+                          width: length,
+                          height: 2,
+                          backgroundColor: '#007AFF',
+                          position: 'absolute',
+                          left: x1,
+                          top: y1 - 1,
+                          transform: [{ rotate: `${angle}rad` }],
+                          transformOrigin: '0 0',
+                        },
+                      ]}
+                    />
+                  );
+                })}
+                {/* Data points */}
+                {dataPoints.map((point, index) => (
+                  <View
+                    key={`point-${index}`}
+                    style={[
+                      styles.dataPoint,
+                      {
+                        left: getXPosition(index) - 3,
+                        top: getYPosition(point) - 3,
+                        backgroundColor: '#007AFF',
+                      },
+                    ]}
+                  />
+                ))}
+              </View>
+            )}
+          </View>
+        </View>
       </View>
       <Text style={styles.graphLabel}>EMG Signal (Voltage vs Time)</Text>
     </View>
@@ -57,48 +123,52 @@ const RefreshButton = ({ onPress }: { onPress: () => void }) => (
 
 export default function App() {
   const [dataPoints, setDataPoints] = useState<number[]>([]);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [lastUpdate, setLastUpdate] = useState<string>('');
 
-  // Simulate real-time data stream
-  const startStream = () => {
-    stopStream();
-    timerRef.current = setInterval(() => {
-      setDataPoints(prev => {
-        const newPoint = Math.random() * 100;
-        const newData = [...prev, newPoint];
-        // Keep only last 50 points for performance
-        return newData.slice(-50);
-      });
-    }, 200); // 5 Hz update
-  };
-
-  const stopStream = () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-  };
-
-  const clearGraph = () => {
-    setDataPoints([]);
-  };
+  // Update this to your computer's IP address
+  const SERVER_URL = 'http://172.20.10.15:8080/emg';
 
   useEffect(() => {
-    startStream();
-    return () => stopStream();
+    const fetchData = async () => {
+      try {
+        const response = await fetch(SERVER_URL);
+        if (response.ok) {
+          const data = await response.json();
+          if (Array.isArray(data)) {
+            setDataPoints(data);
+            setIsConnected(true);
+            setLastUpdate(new Date().toLocaleTimeString());
+          }
+        } else {
+          setIsConnected(false);
+        }
+      } catch (error) {
+        console.error('Error fetching EMG data:', error);
+        setIsConnected(false);
+      }
+    };
+    fetchData();
+    const interval = setInterval(fetchData, 200);
+    return () => clearInterval(interval);
   }, []);
+
+  const clearGraph = () => setDataPoints([]);
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
-      
-      {/* Title Component */}
       <AppTitle />
-      
-      {/* Graph Component */}
+      <View style={styles.statusContainer}>
+        <View style={[styles.statusDot, { backgroundColor: isConnected ? '#4CAF50' : '#F44336' }]} />
+        <Text style={styles.statusText}>
+          {isConnected ? 'Connected to Server' : 'Disconnected'}
+        </Text>
+        {isConnected && lastUpdate && (
+          <Text style={styles.lastUpdateText}>Last update: {lastUpdate}</Text>
+        )}
+      </View>
       <LiveGraph dataPoints={dataPoints} />
-      
-      {/* Refresh Button Component */}
       <RefreshButton onPress={clearGraph} />
     </SafeAreaView>
   );
@@ -127,25 +197,86 @@ const styles = StyleSheet.create({
     color: '#666666',
     fontWeight: '400',
   },
+  statusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    backgroundColor: '#F8F9FA',
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 8,
+  },
+  statusText: {
+    fontSize: 14,
+    color: '#666666',
+    fontWeight: '500',
+  },
+  lastUpdateText: {
+    fontSize: 12,
+    color: '#666666',
+    fontWeight: '400',
+  },
   graphContainer: {
     flex: 1,
     padding: 20,
     justifyContent: 'center',
   },
-  graph: {
+  graphWrapper: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'flex-end',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  graph: {
+    width: 300,
+    height: 200,
     backgroundColor: '#F8F9FA',
     borderRadius: 12,
-    padding: 10,
+    padding: 20,
     marginBottom: 10,
+    position: 'relative',
   },
-  bar: {
+  gridLine: {
+    position: 'absolute',
+    width: '100%',
+    height: 1,
+    backgroundColor: '#E5E5EA',
+  },
+  yAxisLabels: {
+    position: 'absolute',
+    left: -30,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+  },
+  yAxisLabel: {
+    fontSize: 10,
+    color: '#666666',
+    fontWeight: '500',
+  },
+  lineContainer: {
     flex: 1,
-    marginHorizontal: 1,
-    borderRadius: 2,
-    minHeight: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  lineGraph: {
+    width: '100%',
+    height: '100%',
+    position: 'relative',
+  },
+  lineSegment: {
+    position: 'absolute',
+  },
+  dataPoint: {
+    position: 'absolute',
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#007AFF',
   },
   graphLabel: {
     textAlign: 'center',
