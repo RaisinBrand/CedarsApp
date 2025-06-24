@@ -20,7 +20,7 @@ int main() {
     // Create UDP socket
     sockfd = socket(AF_INET, SOCK_DGRAM, 0);
     if (sockfd < 0) {
-        perror("❌ Socket creation failed");
+        perror("Socket creation failed");
         exit(EXIT_FAILURE);
     }
 
@@ -31,19 +31,19 @@ int main() {
     serverAddr.sin_addr.s_addr = INADDR_ANY;
 
     if (bind(sockfd, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
-        perror("❌ Bind failed");
+        perror("Bind failed");
         close(sockfd);
         exit(EXIT_FAILURE);
     }
 
-    printf("✅ Listening for UDP packets on port %d...\n\n", LISTEN_PORT);
+    printf("Listening for UDP packets on port %d...\n\n", LISTEN_PORT);
 
     while (1) {
         ssize_t bytesReceived = recvfrom(sockfd, buffer, BUFFER_SIZE - 1, 0,
                                          (struct sockaddr*)&clientAddr, &clientAddrLen);
 
         if (bytesReceived < 0) {
-            perror("❌ recvfrom failed");
+            perror("recvfrom failed");
             break;
         }
 
