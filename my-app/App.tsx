@@ -127,7 +127,7 @@ export default function App() {
   const [lastUpdate, setLastUpdate] = useState<string>('');
 
   // Update this to your computer's IP address
-  const SERVER_URL = 'http://172.20.10.15:8080/emg'; // hotspot laptop IP address is 172.20.10.15; 
+  const SERVER_URL = 'http://172.20.10.5:8080/emg'; // hotspot laptop IP address is 172.20.10.15; 
 
   useEffect(() => {
     const fetchData = async () => {
@@ -153,7 +153,9 @@ export default function App() {
     return () => clearInterval(interval);
   }, []);
 
-  const clearGraph = () => setDataPoints([]);
+  const clearGraph = () => {
+    setDataPoints([]); // Wipe all points
+  };
 
   return (
     <SafeAreaView style={styles.container}>
