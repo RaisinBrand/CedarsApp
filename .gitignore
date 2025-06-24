@@ -1,0 +1,13 @@
+# Ignore all node_modules everywhere
+**/node_modules/
+
+# Ignore all .bin folders (in case node_modules are partially tracked)
+**/.bin/
+
+# Ignore Expo and platform artifacts
+my-app/.expo/
+
+# Optional: Ignore build artifacts or executables
+*.exe
+
+.vscode
