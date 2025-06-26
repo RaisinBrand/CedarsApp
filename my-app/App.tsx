@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
     fontWeight: '400',
   },
   statusContainer: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 10,

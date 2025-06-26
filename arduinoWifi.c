@@ -56,7 +56,18 @@ void loop() {
 
   double r = ((double)rand() / RAND_MAX) * (max - min) + min;
 
-  int size = 40;
+
+// note each byte is a sample, is the assumption 
+// if adc res is 16 bit, thne we can assume 2 bytes per sample 
+// if adc res is 8 bit, then we can assume 1 byte per sample 
+// size = 40
+// 2 bytes per sample, size 40 means we have 20 samples per packet 
+// 1 byte per sample, size 40 means we have 40 samples per packet 
+
+// this is just int size / samples per packet, where samples per packet depends on adc res
+// note: giga r1 has 16 bit adc res at the maximum 
+
+  int size = 40; // defines your packet size (bytes); 40 samples per packet
   char buffer[size];
   for(int i = 0; i < size; i++){
     buffer[i] = random(0,256); 
@@ -72,7 +83,6 @@ void loop() {
 
   Serial.println("Sent UDP packet: ");
   digitalWrite(86, LOW); 
-  delay(500);
-
+  delay(500); // two packets per second calcualted by 1 sec / 500 ms = 2 packets/sec 
 
 }
