@@ -5,6 +5,8 @@ from pydantic import BaseModel
 import threading
 import socket
 import json
+from collections import deque
+import time
 
 '''
 STEPS:
@@ -12,17 +14,18 @@ STEPS:
 2. If you haven't alr, install fastapi and uvicorn via pip install
 3. Run the script via uvicorn main:app --reload
 4. Samples should be received via print(f"Received {len(chunk.samples)} samples") if Arduino is tranmissing TCP packets 
+
+http://127.0.0.1:8000/docs#/ if u wanna make sure endpoints are working
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload to run the server
 '''
 
-
-
 def process_samples(samples):
-    # This function mimics ingest_samples logic for TCP
     print(f"[TCP] Received {len(samples)} samples: {samples[:10]}...")
-    # You can add filtering, normalization, etc. here
+    maybe_start_new_test()
+    current_test.extend(samples)  # <-- Add this line!
     return {"status": "received", "count": len(samples)}
 
-def tcp_server_thread(host='0.0.0.0', port=4210, chunk_size=10):
+def tcp_server_thread(host='172.20.10.5', port=4210, chunk_size=10):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.bind((host, port))
@@ -70,24 +73,42 @@ app = FastAPI()
 class SampleChunk(BaseModel):
     samples: List[int]  # or List[float] if your data is float
 
+# Set your desired history length
+HISTORY_LENGTH = 10000  # or whatever N you want
+
+# This will store the most recent N samples
+history_buffer = deque(maxlen=HISTORY_LENGTH)
+
+test_history: List[List[int]] = []  # Each inner list is a test
+current_test: List[int] = []
+last_received_time = time.time()
+TEST_TIMEOUT = 2.0  # seconds
+
+def maybe_start_new_test():
+    global current_test, last_received_time
+    now = time.time()
+    if now - last_received_time > TEST_TIMEOUT and current_test:
+        test_history.append(current_test.copy())
+        current_test.clear()
+    last_received_time = now
+
 @app.post("/ingest")
 def ingest_samples(chunk: SampleChunk):
-    # TODO: filter, normalize, enqueue, etc.
-    # For now, just print or store the samples
+    maybe_start_new_test()
+    current_test.extend(chunk.samples)
     print(f"Received {len(chunk.samples)} samples")
     return {"status": "received", "count": len(chunk.samples)}
 
-# # In-memory buffer for raw samples
-# raw_samples_buffer: List[int] = []
+@app.get("/history")
+def get_history():
+    # Return all completed tests + the current one (if not empty)
+    all_tests = test_history + ([current_test] if current_test else [])
+    return {"tests": all_tests}
 
-# @app.post("/append_raw")
-# def append_raw(samples: List[int]):
-#     """Append raw samples to the buffer."""
-#     raw_samples_buffer.extend(samples)
-#     print(f"[HTTP] Appended {len(samples)} samples. Total: {len(raw_samples_buffer)}")
-#     return {"status": "success", "total_samples": len(raw_samples_buffer)}
-
-# @app.get("/history")
-# def get_history():
-#     """Return all stored samples as JSON."""
-#     return {"samples": raw_samples_buffer}
+# @app.post("/start_test")
+# def start_test():
+#     global current_test
+#     if current_test:
+#         test_history.append(current_test)
+#     current_test = []
+#     return {"status": "new test started", "num_tests": len(test_history) + 1}
