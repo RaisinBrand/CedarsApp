@@ -25,6 +25,8 @@ def process_samples(samples):
     current_test.extend(samples)  # <-- Add this line!
     return {"status": "received", "count": len(samples)}
 
+
+# change ip address to the ip address of the computer running the server
 def tcp_server_thread(host='172.20.10.5', port=4210, chunk_size=10):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
