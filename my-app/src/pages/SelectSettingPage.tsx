@@ -47,7 +47,7 @@ export default function SelectSettingPage() {
       if (selectedSetting === 'Clinic') {
         navigation.navigate('Client');
       } else if (selectedSetting === 'Research') {
-        navigation.navigate('Search', { modality: 'research' });
+        navigation.navigate('Research');
       } else if (selectedSetting === 'Review') {
         navigation.navigate('ReviewSelector');
       }

@@ -9,6 +9,7 @@ import SelectSettingPage from './src/pages/SelectSettingPage';
 import ReviewSelectorPage from './src/pages/ReviewSelectorPage';
 import SearchPage from './src/pages/SearchPage';
 import ClientPage from './src/pages/ClinicPage';
+import ResearchPage from './src/pages/ResearchPage';
 
 // Future screens can be added here like:
 // import AgreementScreen from './screens/AgreementScreen';
@@ -20,7 +21,7 @@ export default function App() {
   return (
     <NavigationContainer>
       <SafeAreaView style={styles.container}>
-        <Stack.Navigator initialRouteName='SelectSetting'
+        <Stack.Navigator initialRouteName='Login'
           screenOptions={{
             headerShown: false,
             animation: 'slide_from_right',
@@ -32,6 +33,7 @@ export default function App() {
           <Stack.Screen name="ReviewSelector" component = {ReviewSelectorPage} />
           <Stack.Screen name="Search" component = {SearchPage} />
           <Stack.Screen name="Client" component = {ClientPage} />
+          <Stack.Screen name="Research" component = {ResearchPage} />
           
           {/* add more screens here */}
         </Stack.Navigator>
