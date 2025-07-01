@@ -25,7 +25,8 @@ export default function SelectDevicePage() {
   const [selected, setSelected] = useState<string | null>(null);
 
   const onPress = (deviceKey: string) => {
-    setSelected(deviceKey);
+    
+    setSelected(prev => (prev === deviceKey ? null : deviceKey));
     //navigation.navigate('DeviceDetail', { device: deviceKey });
   };
 
