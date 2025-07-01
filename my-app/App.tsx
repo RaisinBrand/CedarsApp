@@ -5,7 +5,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaView, StyleSheet } from 'react-native';
 import LoginScreen from './src/pages/LoginPage';
 import AgreementPage from './src/pages/AgreementPage';
-import SelectDevicePage from './src/pages/SelectDevicePage';
 import SelectSettingPage from './src/pages/SelectSettingPage';
 import ReviewSelectorPage from './src/pages/ReviewSelectorPage';
 import SearchPage from './src/pages/SearchPage';
@@ -21,7 +20,7 @@ export default function App() {
   return (
     <NavigationContainer>
       <SafeAreaView style={styles.container}>
-        <Stack.Navigator initialRouteName='ReviewSelector'
+        <Stack.Navigator initialRouteName='SelectSetting'
           screenOptions={{
             headerShown: false,
             animation: 'slide_from_right',
@@ -29,7 +28,6 @@ export default function App() {
         >
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Agreement" component={AgreementPage} />
-          <Stack.Screen name="SelectDevice" component = {SelectDevicePage} />
           <Stack.Screen name="SelectSetting" component = {SelectSettingPage} />
           <Stack.Screen name="ReviewSelector" component = {ReviewSelectorPage} />
           <Stack.Screen name="Search" component = {SearchPage} />
