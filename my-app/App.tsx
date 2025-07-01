@@ -6,6 +6,7 @@ import { SafeAreaView, StyleSheet } from 'react-native';
 import LoginScreen from './src/pages/LoginPage';
 import AgreementPage from './src/pages/AgreementPage';
 import SelectDevicePage from './src/pages/SelectDevicePage';
+import SelectSettingPage from './src/pages/SelectSettingPage';
 
 // Future screens can be added here like:
 // import AgreementScreen from './screens/AgreementScreen';
@@ -17,7 +18,7 @@ export default function App() {
   return (
     <NavigationContainer>
       <SafeAreaView style={styles.container}>
-        <Stack.Navigator initialRouteName='SelectDevice'
+        <Stack.Navigator initialRouteName='SelectSetting'
           screenOptions={{
             headerShown: false,
             animation: 'slide_from_right',
@@ -26,6 +27,8 @@ export default function App() {
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Agreement" component={AgreementPage} />
           <Stack.Screen name="SelectDevice" component = {SelectDevicePage} />
+          <Stack.Screen name="SelectSetting" component = {SelectSettingPage} />
+          
           {/* add more screens here */}
         </Stack.Navigator>
       </SafeAreaView>
