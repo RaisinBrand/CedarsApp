@@ -10,6 +10,9 @@ import {
   Platform,
   Modal,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../navigationTypes';
 
 // Generic field metadata
 type Field = {
@@ -24,6 +27,7 @@ type Field = {
 const studyMethods = ['EEG', 'MRI', 'Blood Test'];
 
 export default function ResearchPage() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   // Selected study method
   const [method, setMethod] = useState<string>('');
   // Array of fields to render
@@ -135,6 +139,11 @@ export default function ResearchPage() {
       style={styles.container}
       behavior={Platform.select({ ios: 'padding', android: undefined })}
     >
+      {/* Back Button */}
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Text style={styles.backText}>{'←'} Back</Text>
+      </TouchableOpacity>
+
       <ScrollView contentContainerStyle={styles.form}>
         <Text style={styles.header}>Patient Test Data</Text>
         {fields.map(renderField)}
@@ -170,7 +179,19 @@ export default function ResearchPage() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000' },
-  form: { padding: 24 },
+  backButton: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 60 : 40,
+    left: 16,
+    padding: 8,
+    zIndex: 1000,
+  },
+  backText: {
+    fontSize: 16,
+    color: '#FF0',
+    fontWeight: '600',
+  },
+  form: { padding: 24, paddingTop: 80 },
   header: { fontSize: 28, color: '#FF0', marginBottom: 24, textAlign: 'center' },
   label: { color: '#FFF', fontSize: 16, marginBottom: 8 },
   input: { backgroundColor: '#111', borderRadius: 8, padding: 12, marginBottom: 16, color : "white"},
