@@ -13,6 +13,9 @@ import {
   StatusBar,
 } from 'react-native';
 import { FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../navigationTypes';
 
 // Generic field metadata
 type Field = {
@@ -27,6 +30,7 @@ type Field = {
 const studyMethods = ['EEG', 'MRI', 'Blood Test'];
 
 export default function ClientPage() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   // Selected study method
   const [method, setMethod] = useState<string>('');
   const [fields, setFields] = useState<Field[]>([]);
@@ -171,12 +175,15 @@ export default function ClientPage() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       
+      {/* Back Button */}
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <FontAwesome5 name="arrow-left" size={20} color="#4A90E2" />
+        <Text style={styles.backText}>Back</Text>
+      </TouchableOpacity>
+      
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerTop}>
-          <View style={styles.headerIcon}>
-            <FontAwesome5 name="clipboard-list" size={24} color="#FFFFFF" />
-          </View>
           <View style={styles.headerTitleContainer}>
             <Text style={styles.headerTitle}>Patient Data</Text>
             <Text style={styles.headerSubtitle}>Medical form</Text>
@@ -330,6 +337,25 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F8FAFC',
   },
+  backButton: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 60 : 40,
+    left: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+    zIndex: 1000,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  backText: {
+    fontSize: 16,
+    color: '#4A90E2',
+    fontWeight: '600',
+    marginLeft: 8,
+  },
   keyboardContainer: {
     flex: 1,
   },
@@ -348,29 +374,28 @@ const styles = StyleSheet.create({
   headerTop: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 12,
-  },
-  headerIcon: {
-    backgroundColor: '#4A90E2',
-    padding: 8,
-    borderRadius: 8,
-    marginRight: 12,
   },
   headerTitleContainer: {
     flex: 1,
+    alignItems: 'center',
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#000000',
+    textAlign: 'center',
   },
   headerSubtitle: {
     fontSize: 14,
     color: '#666666',
+    textAlign: 'center',
   },
   headerBottom: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    gap: 32,
   },
   dateInfo: {
     flexDirection: 'row',

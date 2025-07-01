@@ -45,7 +45,7 @@ export default function SelectSettingPage() {
   const handleContinue = () => {
     if (selectedDevices.length > 0 && selectedSetting) {
       if (selectedSetting === 'Clinic') {
-        navigation.navigate('Client');
+        navigation.navigate('Clinic');
       } else if (selectedSetting === 'Research') {
         navigation.navigate('Research');
       } else if (selectedSetting === 'Review') {
