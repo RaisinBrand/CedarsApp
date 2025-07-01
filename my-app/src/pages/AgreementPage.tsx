@@ -9,10 +9,12 @@ import {
   Platform,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../navigationTypes';
 import agreement from '../../assets/agreement.json';
 
 export default function AgreementPage() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const handleAccept = () => {
     navigation.navigate('SelectDevice');
