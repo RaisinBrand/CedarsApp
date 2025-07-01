@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet, Platform } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Platform, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigationTypes';
@@ -15,6 +15,11 @@ export default function ReviewSelector() {
 
   return (
     <View style={styles.container}>
+      {/* Back Button */}
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Text style={styles.backText}>{'←'} Back</Text>
+      </TouchableOpacity>
+
       <Text style={styles.title}>Choose Review Mode</Text>
 
       <Pressable style={styles.card} onPress={() => go('clinic')}>
@@ -31,7 +36,19 @@ export default function ReviewSelector() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', padding: 24, paddingTop: 60 },
+  container: { flex: 1, backgroundColor: '#fff', padding: 24, paddingTop: 80 },
+  backButton: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 60 : 40,
+    left: 16,
+    padding: 8,
+    zIndex: 1000,
+  },
+  backText: {
+    fontSize: 16,
+    color: '#007AFF',
+    fontWeight: '600',
+  },
   title: {
     fontSize: 28,
     fontWeight: '600',
