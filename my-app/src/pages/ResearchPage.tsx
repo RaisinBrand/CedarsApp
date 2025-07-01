@@ -140,7 +140,7 @@ export default function ResearchPage() {
       behavior={Platform.select({ ios: 'padding', android: undefined })}
     >
       {/* Back Button */}
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('SelectSetting')}>
         <Text style={styles.backText}>{'←'} Back</Text>
       </TouchableOpacity>
 

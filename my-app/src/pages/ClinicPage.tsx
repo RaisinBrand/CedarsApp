@@ -176,7 +176,7 @@ export default function ClientPage() {
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       
       {/* Back Button */}
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('SelectSetting')}>
         <FontAwesome5 name="arrow-left" size={20} color="#4A90E2" />
         <Text style={styles.backText}>Back</Text>
       </TouchableOpacity>

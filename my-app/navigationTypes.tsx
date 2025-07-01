@@ -6,4 +6,5 @@ export type RootStackParamList = {
     ReviewSelector: undefined;
     Search: { modality: 'clinic' | 'research' };
     Clinic: undefined;
+    ConnectDevice: { previousPage: 'Clinic' | 'Research' };
   };

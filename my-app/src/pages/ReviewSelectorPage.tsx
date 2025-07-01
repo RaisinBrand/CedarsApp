@@ -16,7 +16,7 @@ export default function ReviewSelector() {
   return (
     <View style={styles.container}>
       {/* Back Button */}
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('SelectSetting')}>
         <Text style={styles.backText}>{'←'} Back</Text>
       </TouchableOpacity>
 
