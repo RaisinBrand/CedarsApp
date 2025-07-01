@@ -11,7 +11,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigationTypes';
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'SelectDevice'>;
+//type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'SelectDevice'>;
 
 const devices = [
   { key: 'Reflex',   label: 'Reflex Cuff' },
@@ -21,7 +21,7 @@ const devices = [
 ];
 
 export default function SelectDevicePage() {
-  const navigation = useNavigation<NavigationProp>();
+  //const navigation = useNavigation<NavigationProp>();
   const [selected, setSelected] = useState<string | null>(null);
 
   const onPress = (deviceKey: string) => {
