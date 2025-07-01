@@ -12,13 +12,7 @@ import {
   SafeAreaView,
   StatusBar,
 } from 'react-native';
-<<<<<<< HEAD
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../navigationTypes';
-=======
 import { FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
->>>>>>> appBrandan
 
 // Generic field metadata
 type Field = {
@@ -32,7 +26,8 @@ type Field = {
 
 const studyMethods = ['EEG', 'MRI', 'Blood Test'];
 
-export default function ClinicPage() {
+export default function ClientPage() {
+  // Selected study method
   const [method, setMethod] = useState<string>('');
   const [fields, setFields] = useState<Field[]>([]);
   const [values, setValues] = useState<Record<string, any>>({});
