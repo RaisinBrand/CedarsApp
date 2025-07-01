@@ -3,8 +3,8 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaView, StyleSheet } from 'react-native';
-import LoginScreen from './pages/LoginPage';
-import AgreementPage from './pages/AgreementPage';
+import LoginScreen from './src/pages/LoginPage';
+import AgreementPage from './src/pages/AgreementPage';
 // Future screens can be added here like:
 // import AgreementScreen from './screens/AgreementScreen';
 import { RootStackParamList } from './navigationTypes';

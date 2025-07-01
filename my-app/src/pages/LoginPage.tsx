@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../navigationTypes';
+import { RootStackParamList } from '../../navigationTypes';
 
 
 export default function LoginScreen() {
