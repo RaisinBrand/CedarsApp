@@ -1,22 +1,38 @@
 // App.tsx
-import React from 'react'
-import { SafeAreaView, Text, StyleSheet } from 'react-native'
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { SafeAreaView, StyleSheet } from 'react-native';
+import LoginScreen from './pages/LoginPage';
+import AgreementPage from './pages/AgreementPage';
+// Future screens can be added here like:
+// import AgreementScreen from './screens/AgreementScreen';
+import { RootStackParamList } from './navigationTypes';
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.text}>Hello tight!</Text>
-    </SafeAreaView>
-  )
+    <NavigationContainer>
+      <SafeAreaView style={styles.container}>
+        <Stack.Navigator
+          screenOptions={{
+            headerShown: false,
+            animation: 'slide_from_right',
+          }}
+        >
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Agreement" component={AgreementPage} />
+          {/* add more screens here */}
+        </Stack.Navigator>
+      </SafeAreaView>
+    </NavigationContainer>
+  );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
   },
-  text: {
-    fontSize: 18,
-  },
-})
+});
