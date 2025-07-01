@@ -17,7 +17,7 @@ export default function App() {
   return (
     <NavigationContainer>
       <SafeAreaView style={styles.container}>
-        <Stack.Navigator initialRouteName='SelectDevice'
+        <Stack.Navigator initialRouteName='Login'
           screenOptions={{
             headerShown: false,
             animation: 'slide_from_right',

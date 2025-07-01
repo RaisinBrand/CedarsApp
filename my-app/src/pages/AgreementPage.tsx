@@ -15,8 +15,7 @@ export default function AgreementPage() {
   const navigation = useNavigation();
 
   const handleAccept = () => {
-    // navigation.navigate('NextScreen');  // wire this up later
-    alert('Agreement accepted!');
+    navigation.navigate('SelectDevice');
   };
 
   return (
