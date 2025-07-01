@@ -3,4 +3,5 @@ export type RootStackParamList = {
     Agreement: undefined;
     SelectDevice: undefined;
     SelectSetting: undefined;
+    Client: undefined;
   };
