@@ -17,7 +17,7 @@ export default function AgreementPage() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const handleAccept = () => {
-    navigation.navigate('SelectDevice');
+    navigation.navigate('SelectSetting');
   };
 
   return (
