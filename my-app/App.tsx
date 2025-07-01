@@ -1,19 +1,22 @@
 // App.tsx
-import * as React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import RealTime from './RealTime';
-import CurrentTest from './CurrentTest';
-
-const Stack = createStackNavigator();
+import React from 'react'
+import { SafeAreaView, Text, StyleSheet } from 'react-native'
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="CurrentTest">
-        <Stack.Screen name="RealTime" component={RealTime} />
-        <Stack.Screen name="CurrentTest" component={CurrentTest} />
-      </Stack.Navigator>
-    </NavigationContainer>
-  );
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.text}>Hello tight!</Text>
+    </SafeAreaView>
+  )
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  text: {
+    fontSize: 18,
+  },
+})
