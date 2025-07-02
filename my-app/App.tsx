@@ -11,6 +11,8 @@ import SearchPage from './src/pages/SearchPage';
 import ClinicPage from './src/pages/ClinicPage';
 import ResearchPage from './src/pages/ResearchPage';
 import ConnectDevicePage from './src/pages/ConnectDevicePage';
+import CurrentStudyPage from './src/pages/CurrentStudyPage';
+import PreviousStudyPage from './src/pages/PreviousStudyPage';
 // Future screens can be added here like:
 // import AgreementScreen from './screens/AgreementScreen';
 import { RootStackParamList } from './navigationTypes';
@@ -21,7 +23,7 @@ export default function App() {
   return (
     <NavigationContainer>
       <SafeAreaView style={styles.container}>
-        <Stack.Navigator initialRouteName='ConnectDevice'
+        <Stack.Navigator initialRouteName='Login'
           screenOptions={{
             headerShown: false,
             animation: 'slide_from_right',
@@ -35,6 +37,8 @@ export default function App() {
           <Stack.Screen name="Clinic" component = {ClinicPage} />
           <Stack.Screen name="Research" component = {ResearchPage} />
           <Stack.Screen name="ConnectDevice" component = {ConnectDevicePage} />
+          <Stack.Screen name="CurrentStudy" component={CurrentStudyPage} />
+          <Stack.Screen name="PreviousStudy" component={PreviousStudyPage} />
           
           {/* add more screens here */}
         </Stack.Navigator>
