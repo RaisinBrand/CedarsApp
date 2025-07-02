@@ -23,7 +23,11 @@ export default function App() {
   return (
     <NavigationContainer>
       <SafeAreaView style={styles.container}>
+<<<<<<< Updated upstream
         <Stack.Navigator initialRouteName='Login'
+=======
+        <Stack.Navigator initialRouteName='Clinic'
+>>>>>>> Stashed changes
           screenOptions={{
             headerShown: false,
             animation: 'slide_from_right',
