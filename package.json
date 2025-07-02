@@ -4,6 +4,14 @@
     "@react-native-picker/picker": "^2.11.1",
     "expo": "^53.0.15",
     "lucide-react": "^0.525.0",
-    "react-native-vector-icons": "^10.2.0"
+    "react-native-vector-icons": "^10.2.0",
+    "react": "19.0.0",
+    "react-native": "0.79.5"
+  },
+  "name": "CedarsApp",
+  "version": "1.0.0",
+  "scripts": {
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   }
 }

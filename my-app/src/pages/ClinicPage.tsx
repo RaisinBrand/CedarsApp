@@ -27,7 +27,7 @@ type Field = {
   max?: number;
 };
 
-const studyMethods = ['EEG', 'MRI', 'Blood Test'];
+const studyMethods = ['EEG', 'Muscle Cuff', 'Pressure Plate'];
 
 export default function ClientPage() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -51,9 +51,9 @@ export default function ClientPage() {
     const base: Field[] = [
       { key: 'name',      label: 'Patient Name',    type: 'text' },
       { key: 'birthDate', label: 'Birth Date',      type: 'date' },
-      { key: 'sex',       label: 'Sex',             type: 'dropdown', options: ['Male', 'Female', 'Other'] },
+      { key: 'sex',       label: 'Sex',             type: 'dropdown', options: ['Male', 'Female', 'Freak', 'Other'] },
       { key: 'race',      label: 'Race',            type: 'dropdown', options: ['Asian', 'Black', 'White', 'Other'] },
-      { key: 'visitDate', label: 'Visit Date',      type: 'date' },
+
       { key: 'method',    label: 'Method of Study',  type: 'dropdown', options: studyMethods },
     ];
     if (method === 'EEG')       base.push({ key: 'electrodeCount', label: 'Electrode Count', type: 'number', min: 1, max: 256 });
@@ -137,15 +137,28 @@ export default function ClientPage() {
       case 'dropdown':
         return renderDropdown(field);
       case 'date':
+        const val = values[field.key] || '';
         return (
           <View key={field.key} style={styles.fieldContainer}>
             <Text style={styles.label}>{field.label}</Text>
             <TextInput
               style={styles.input}
-              value={val}
-              onChangeText={(text) => handleChange(field.key, text)}
+              keyboardType="numeric"
+              maxLength={10}                
               placeholder="YYYY-MM-DD"
-              placeholderTextColor="#999999"
+              value={val}
+              onChangeText={text => {
+                
+                const digits = text.replace(/\D/g, '').slice(0, 8);
+                let formatted = digits;
+                if (digits.length > 4) {
+                  formatted = digits.slice(0, 4) + '-' + digits.slice(4);
+                }
+                if (digits.length > 6) {
+                  formatted = formatted.slice(0, 7) + '-' + digits.slice(6);
+                }
+                handleChange(field.key, formatted);
+              }}
             />
           </View>
         );
@@ -197,7 +210,7 @@ export default function ClientPage() {
           </View>
           <View style={styles.dateInfo}>
             <FontAwesome5 name="user" size={16} color="#F5A623" />
-            <Text style={styles.dateText}>Visit: {formatVisitDate(values.visitDate)}</Text>
+            <Text style={styles.dateText}>Clinician: {"Dr Bdizzle"}</Text>
           </View>
         </View>
       </View>
@@ -249,7 +262,7 @@ export default function ClientPage() {
               <View style={[styles.infoCard, styles.infoCardBlue]}>
                 <MaterialCommunityIcons name="brain" size={24} color="#4A90E2" />
                 <View style={styles.infoCardText}>
-                  <Text style={styles.infoCardTitle}>MRI Imaging</Text>
+                  <Text style={styles.infoCardTitle}>Muscle Cuff</Text>
                   <Text style={styles.infoCardDescription}>High-resolution magnetic imaging</Text>
                 </View>
               </View>
@@ -257,7 +270,7 @@ export default function ClientPage() {
               <View style={[styles.infoCard, styles.infoCardRed]}>
                 <FontAwesome5 name="tint" size={24} color="#D0021B" />
                 <View style={styles.infoCardText}>
-                  <Text style={styles.infoCardTitle}>Blood Analysis</Text>
+                  <Text style={styles.infoCardTitle}>Pressure Plate</Text>
                   <Text style={styles.infoCardDescription}>Comprehensive blood testing</Text>
                 </View>
               </View>
