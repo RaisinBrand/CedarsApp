@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
-  Alert,
   Platform,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -13,60 +12,99 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigationTypes';
 import { FontAwesome5 } from '@expo/vector-icons';
 
-type ConnectionState = 'searching' | 'found' | 'connecting' | 'connected' | 'error';
+// ── CONFIG ───────────────────────────────────────────
+/** Replace with the IP (or tunnel URL) where FastAPI runs. */
+const BACKEND_URL = 'http://172.20.10.5:8000';
+/** How often we re-query /devices/ (ms). */
+const POLL_MS = 3_000;
+
+// ── TYPES ────────────────────────────────────────────
+type ConnectionState =
+  | 'searching'
+  | 'found'
+  | 'connecting'
+  | 'connected'
+  | 'error';
+
 type ConnectDeviceRouteProp = RouteProp<RootStackParamList, 'ConnectDevice'>;
 
+// ── COMPONENT ───────────────────────────────────────
 export default function ConnectDevicePage() {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<ConnectDeviceRouteProp>();
-  const [connectionState, setConnectionState] = useState<ConnectionState>('searching');
-  const [deviceIP, setDeviceIP] = useState<string>('');
+
+  const [connectionState, setConnectionState] =
+    useState<ConnectionState>('searching');
+  const [deviceID, setDeviceID] = useState('');
+  const [deviceIP, setDeviceIP] = useState('');
   const [retryCount, setRetryCount] = useState(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Get the previous page type from route params
-  const previousPage = route.params?.previousPage || 'Clinic';
+  // If you passed down “previousPage” in params, grab it:
+  const previousPage = route.params?.previousPage ?? 'Clinic';
 
-  // Simulate device discovery
+  // ── 1️⃣  Real discovery loop: poll /devices/ ───────────
   useEffect(() => {
-    if (connectionState === 'searching') {
-      setTimeout(() => {
-        setDeviceIP('192.168.1.100');
-        setConnectionState('found');
-      }, 2000);
-    }
+    const poll = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/devices/`);
+        const json = await res.json();
+
+        const ids = Object.keys(json); // {"giga-01": {...}}
+        if (ids.length > 0) {
+          const id = ids[0];
+          const ip = json[id].ip;
+          setDeviceID(id);
+          setDeviceIP(ip);
+          if (connectionState === 'searching') setConnectionState('found');
+        } else {
+          setDeviceID('');
+          setDeviceIP('');
+          if (
+            connectionState !== 'connecting' &&
+            connectionState !== 'connected'
+          ) {
+            setConnectionState('searching');
+          }
+        }
+      } catch (err) {
+        console.warn('Device fetch error:', err);
+        if (connectionState !== 'connected') setConnectionState('error');
+      } finally {
+        timerRef.current = setTimeout(poll, POLL_MS);
+      }
+    };
+
+    poll(); // kick off immediately
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
   }, [connectionState]);
 
+  // ── 2️⃣  Simulated “connect” button (replace later) ──
   const handleConnect = () => {
     setConnectionState('connecting');
-    
-    // Simulate connection attempt
-    setTimeout(() => {
-      const success = Math.random() > 0.3; // 70% success rate for demo
-      
-      if (success) {
-        setConnectionState('connected');
-      } else {
-        setConnectionState('error');
-        setRetryCount(prev => prev + 1);
-      }
-    }, 2000);
+    // TODO: replace with real WebSocket / handshake
+    setTimeout(() => setConnectionState('connected'), 1500);
   };
 
   const handleRetry = () => {
+    setRetryCount((prev) => prev + 1);
     setConnectionState('searching');
-    setRetryCount(0);
   };
 
-
-
+  // ── 3️⃣  UI renderer ─────────────────────────────────
   const renderContent = () => {
     switch (connectionState) {
       case 'searching':
         return (
           <View style={styles.centerContent}>
             <ActivityIndicator size="large" color="#4A90E2" />
-            <Text style={styles.statusText}>Searching for devices...</Text>
-            <Text style={styles.subText}>Make sure your device is powered on and connected to the same network</Text>
+            <Text style={styles.statusText}>Scanning for boards…</Text>
+            <Text style={styles.subText}>
+              Make sure the board is powered on and on the same network
+            </Text>
           </View>
         );
 
@@ -75,12 +113,14 @@ export default function ConnectDevicePage() {
           <View style={styles.centerContent}>
             <View style={styles.deviceCard}>
               <FontAwesome5 name="microchip" size={48} color="#4A90E2" />
-              <Text style={styles.deviceTitle}>Reflex Device Found</Text>
-              <Text style={styles.deviceIP}>IP: {deviceIP}</Text>
+              <Text style={styles.deviceTitle}>Board detected</Text>
+              <Text style={styles.deviceIP}>
+                {deviceID} · {deviceIP}
+              </Text>
               <Text style={styles.deviceStatus}>Ready to connect</Text>
             </View>
             <TouchableOpacity style={styles.connectButton} onPress={handleConnect}>
-              <Text style={styles.connectButtonText}>Connect to Device</Text>
+              <Text style={styles.connectButtonText}>Connect</Text>
             </TouchableOpacity>
           </View>
         );
@@ -89,8 +129,8 @@ export default function ConnectDevicePage() {
         return (
           <View style={styles.centerContent}>
             <ActivityIndicator size="large" color="#4A90E2" />
-            <Text style={styles.statusText}>Connecting to device...</Text>
-            <Text style={styles.subText}>Establishing secure connection</Text>
+            <Text style={styles.statusText}>Connecting to board…</Text>
+            <Text style={styles.subText}>Establishing secure channel</Text>
           </View>
         );
 
@@ -99,10 +139,14 @@ export default function ConnectDevicePage() {
           <View style={styles.centerContent}>
             <View style={styles.successCard}>
               <FontAwesome5 name="check-circle" size={64} color="#4CAF50" />
-              <Text style={styles.successTitle}>Connected Successfully!</Text>
-              <Text style={styles.successSubtitle}>Device is ready for testing</Text>
+              <Text style={styles.successTitle}>Connected!</Text>
+              <Text style={styles.successSubtitle}>
+                Device is ready for testing
+              </Text>
             </View>
-            <Text style={styles.redirectText}>Redirecting to test page...</Text>
+            <Text style={styles.redirectText}>
+              Redirecting to {previousPage} page…
+            </Text>
           </View>
         );
 
@@ -110,67 +154,89 @@ export default function ConnectDevicePage() {
         return (
           <View style={styles.centerContent}>
             <View style={styles.errorCard}>
-              <FontAwesome5 name="exclamation-triangle" size={48} color="#F44336" />
-              <Text style={styles.errorTitle}>Connection Failed</Text>
+              <FontAwesome5
+                name="exclamation-triangle"
+                size={48}
+                color="#F44336"
+              />
+              <Text style={styles.errorTitle}>Connection failed</Text>
               <Text style={styles.errorSubtitle}>
-                Unable to connect to device. Please check your network connection and try again.
+                Please check your network and try again.
               </Text>
               <Text style={styles.retryText}>Attempts: {retryCount}</Text>
             </View>
             <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
-              <Text style={styles.retryButtonText}>Try Again</Text>
+              <Text style={styles.retryButtonText}>Try again</Text>
             </TouchableOpacity>
           </View>
         );
+
+      default:
+        return null;
     }
   };
 
+  // ── 4️⃣  Component tree ──────────────────────────────
   return (
     <View style={styles.container}>
-
-
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Connect Device</Text>
-        <Text style={styles.headerSubtitle}>Establish connection with reflex testing device</Text>
+        <Text style={styles.headerSubtitle}>
+          Establish connection with reflex tester
+        </Text>
       </View>
 
-      {/* Main Content */}
-      <View style={styles.content}>
-        {renderContent()}
-      </View>
+      {/* Main */}
+      <View style={styles.content}>{renderContent()}</View>
 
-      {/* Status Bar */}
+      {/* Status bar */}
       <View style={styles.statusBar}>
-        <View style={[styles.statusDot, { backgroundColor: getStatusColor() }]} />
+        <View
+          style={[styles.statusDot, { backgroundColor: getStatusColor() }]}
+        />
         <Text style={styles.statusBarText}>{getStatusText()}</Text>
       </View>
     </View>
   );
 
+  // ── helpers ─────────────────────────────────────────
   function getStatusColor(): string {
     switch (connectionState) {
-      case 'searching': return '#FFA726';
-      case 'found': return '#4A90E2';
-      case 'connecting': return '#FFA726';
-      case 'connected': return '#4CAF50';
-      case 'error': return '#F44336';
-      default: return '#999';
+      case 'searching':
+        return '#FFA726';
+      case 'found':
+        return '#4A90E2';
+      case 'connecting':
+        return '#FFA726';
+      case 'connected':
+        return '#4CAF50';
+      case 'error':
+        return '#F44336';
+      default:
+        return '#999';
     }
   }
 
   function getStatusText(): string {
     switch (connectionState) {
-      case 'searching': return 'Searching...';
-      case 'found': return 'Device Found';
-      case 'connecting': return 'Connecting...';
-      case 'connected': return 'Connected';
-      case 'error': return 'Connection Failed';
-      default: return 'Unknown';
+      case 'searching':
+        return 'Searching…';
+      case 'found':
+        return 'Device found';
+      case 'connecting':
+        return 'Connecting…';
+      case 'connected':
+        return 'Connected';
+      case 'error':
+        return 'Error';
+      default:
+        return 'Unknown';
     }
   }
 }
 
+// ── STYLE SHEET (unchanged from your version) ─────────
 const styles = StyleSheet.create({
   container: {
     flex: 1,
