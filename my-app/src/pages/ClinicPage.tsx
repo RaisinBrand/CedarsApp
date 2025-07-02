@@ -13,24 +13,59 @@ import {
   StatusBar,
 } from 'react-native';
 import { FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../navigationTypes';
 
 // Generic field metadata
 type Field = {
   key: string;
   label: string;
-  type: 'text' | 'number' | 'dropdown' | 'date';
+  type: 'text' | 'number' | 'dropdown' | 'date' | 'decimal';
   options?: string[];
   min?: number;
   max?: number;
+  unit?: string;
 };
 
 const studyMethods = ['EEG', 'Muscle Cuff', 'Pressure Plate'];
 
+const ethnicityOptions = [
+  'Hispanic or Latino',
+  'Not Hispanic or Latino',
+  'Unknown',
+  'Prefer not to answer'
+];
+
+const genderIdentityOptions = [
+  'Man',
+  'Woman',
+  'Non-binary',
+  'Transgender man',
+  'Transgender woman',
+  'Genderfluid',
+  'Agender',
+  'Other',
+  'Prefer not to answer'
+];
+
+const sexAssignedOptions = [
+  'Male',
+  'Female',
+  'Intersex',
+  'Prefer not to answer'
+];
+
+const sexualOrientationOptions = [
+  'Heterosexual/Straight',
+  'Gay',
+  'Lesbian',
+  'Bisexual',
+  'Pansexual',
+  'Asexual',
+  'Queer',
+  'Other',
+  'Prefer not to answer'
+];
+
 export default function ClientPage() {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   // Selected study method
   const [method, setMethod] = useState<string>('');
   const [fields, setFields] = useState<Field[]>([]);
@@ -49,16 +84,29 @@ export default function ClientPage() {
 
   useEffect(() => {
     const base: Field[] = [
-      { key: 'name',      label: 'Patient Name',    type: 'text' },
-      { key: 'birthDate', label: 'Birth Date',      type: 'date' },
-      { key: 'sex',       label: 'Sex',             type: 'dropdown', options: ['Male', 'Female', 'Freak', 'Other'] },
-      { key: 'race',      label: 'Race',            type: 'dropdown', options: ['Asian', 'Black', 'White', 'Other'] },
-
-      { key: 'method',    label: 'Method of Study',  type: 'dropdown', options: studyMethods },
+      // Basic Demographics
+      { key: 'name', label: 'Patient Name', type: 'text' },
+      { key: 'birthDate', label: 'Date of Birth', type: 'date' },
+      { key: 'ethnicity', label: 'Ethnicity', type: 'dropdown', options: ethnicityOptions },
+      { key: 'genderIdentity', label: 'Gender Identity', type: 'dropdown', options: genderIdentityOptions },
+      { key: 'sexAssigned', label: 'Sex Assigned at Birth', type: 'dropdown', options: sexAssignedOptions },
+      { key: 'sexualOrientation', label: 'Sexual Orientation', type: 'dropdown', options: sexualOrientationOptions },
+      
+      // Anthropometric Measurements
+      { key: 'height', label: 'Height', type: 'decimal', min: 50, max: 250, unit: 'cm' },
+      { key: 'weight', label: 'Weight', type: 'decimal', min: 10, max: 300, unit: 'kg' },
+      { key: 'upperBodyHeight', label: 'Upper Body Height', type: 'decimal', min: 20, max: 150, unit: 'cm' },
+      { key: 'lowerBodyHeight', label: 'Lower Body Height', type: 'decimal', min: 30, max: 150, unit: 'cm' },
+      
+      // Study Information
+      { key: 'method', label: 'Method of Study', type: 'dropdown', options: studyMethods },
     ];
-    if (method === 'EEG')       base.push({ key: 'electrodeCount', label: 'Electrode Count', type: 'number', min: 1, max: 256 });
-    if (method === 'MRI')       base.push({ key: 'fieldStrength',  label: 'Field Strength (T)', type: 'number', min: 0, max: 7 });
-    if (method === 'Blood Test')base.push({ key: 'wbcCount',       label: 'WBC Count',        type: 'number', min: 0, max: 100 });
+
+    // Method-specific fields
+    if (method === 'EEG') base.push({ key: 'electrodeCount', label: 'Electrode Count', type: 'number', min: 1, max: 256 });
+    if (method === 'Muscle Cuff') base.push({ key: 'cuffPressure', label: 'Cuff Pressure', type: 'number', min: 0, max: 300, unit: 'mmHg' });
+    if (method === 'Pressure Plate') base.push({ key: 'plateSize', label: 'Plate Size', type: 'dropdown', options: ['Small', 'Medium', 'Large'] });
+
     setFields(base);
     base.forEach(f => setValues(v => ({ ...v, [f.key]: v[f.key] ?? '' })));
   }, [method]);
@@ -77,10 +125,10 @@ export default function ClientPage() {
     switch (method) {
       case 'EEG': 
         return <FontAwesome5 name="bolt" size={20} color="#F5A623" />;
-      case 'MRI': 
-        return <MaterialCommunityIcons name="brain" size={20} color="#4A90E2" />;
-      case 'Blood Test': 
-        return <FontAwesome5 name="tint" size={20} color="#D0021B" />;
+      case 'Muscle Cuff': 
+        return <MaterialCommunityIcons name="arm-flex" size={20} color="#4A90E2" />;
+      case 'Pressure Plate': 
+        return <FontAwesome5 name="weight" size={20} color="#D0021B" />;
       default: 
         return <FontAwesome5 name="stethoscope" size={20} color="#999999" />;
     }
@@ -113,6 +161,7 @@ export default function ClientPage() {
           <View key={field.key} style={styles.fieldContainer}>
             <Text style={styles.label}>
               {field.label}
+              {field.unit && <Text style={styles.unitText}> ({field.unit})</Text>}
               {field.min !== undefined && field.max !== undefined && (
                 <Text style={styles.rangeText}> ({field.min}-{field.max})</Text>
               )}
@@ -129,7 +178,34 @@ export default function ClientPage() {
                   handleChange(field.key, '');
                 }
               }}
-              placeholder={field.label}
+              placeholder={`Enter ${field.label.toLowerCase()}`}
+              placeholderTextColor="#999999"
+            />
+          </View>
+        );
+      case 'decimal':
+        return (
+          <View key={field.key} style={styles.fieldContainer}>
+            <Text style={styles.label}>
+              {field.label}
+              {field.unit && <Text style={styles.unitText}> ({field.unit})</Text>}
+              {field.min !== undefined && field.max !== undefined && (
+                <Text style={styles.rangeText}> ({field.min}-{field.max})</Text>
+              )}
+            </Text>
+            <TextInput
+              style={styles.input}
+              keyboardType="decimal-pad"
+              value={String(val)}
+              onChangeText={(text) => {
+                const n = parseFloat(text);
+                if (!isNaN(n) && (field.min == null || n >= field.min) && (field.max == null || n <= field.max)) {
+                  handleChange(field.key, n);
+                } else if (text === '' || text.endsWith('.')) {
+                  handleChange(field.key, text);
+                }
+              }}
+              placeholder={`Enter ${field.label.toLowerCase()}`}
               placeholderTextColor="#999999"
             />
           </View>
@@ -148,7 +224,6 @@ export default function ClientPage() {
               placeholder="YYYY-MM-DD"
               value={val}
               onChangeText={text => {
-                
                 const digits = text.replace(/\D/g, '').slice(0, 8);
                 let formatted = digits;
                 if (digits.length > 4) {
@@ -159,6 +234,7 @@ export default function ClientPage() {
                 }
                 handleChange(field.key, formatted);
               }}
+              placeholderTextColor="#999999"
             />
           </View>
         );
@@ -170,7 +246,7 @@ export default function ClientPage() {
               style={styles.input}
               value={val}
               onChangeText={(text) => handleChange(field.key, text)}
-              placeholder={field.label}
+              placeholder={`Enter ${field.label.toLowerCase()}`}
               placeholderTextColor="#999999"
             />
           </View>
@@ -178,21 +254,35 @@ export default function ClientPage() {
     }
   };
 
+  const renderSectionHeader = (title: string) => (
+    <View style={styles.sectionHeader}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      <View style={styles.sectionDivider} />
+    </View>
+  );
+
   const formatVisitDate = (dateString: string) => {
     if (!dateString) return 'Not set';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
+  // Group fields by section
+  const demographicFields = fields.filter(f => 
+    ['name', 'birthDate', 'ethnicity', 'genderIdentity', 'sexAssigned', 'sexualOrientation'].includes(f.key)
+  );
+  
+  const anthropometricFields = fields.filter(f => 
+    ['height', 'weight', 'upperBodyHeight', 'lowerBodyHeight'].includes(f.key)
+  );
+  
+  const studyFields = fields.filter(f => 
+    f.key === 'method' || !['name', 'birthDate', 'ethnicity', 'genderIdentity', 'sexAssigned', 'sexualOrientation', 'height', 'weight', 'upperBodyHeight', 'lowerBodyHeight', 'method'].includes(f.key)
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-      
-      {/* Back Button */}
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('SelectSetting')}>
-        <FontAwesome5 name="arrow-left" size={20} color="#4A90E2" />
-        <Text style={styles.backText}>Back</Text>
-      </TouchableOpacity>
       
       {/* Header */}
       <View style={styles.header}>
@@ -210,7 +300,7 @@ export default function ClientPage() {
           </View>
           <View style={styles.dateInfo}>
             <FontAwesome5 name="user" size={16} color="#F5A623" />
-            <Text style={styles.dateText}>Clinician: {"Dr Bdizzle"}</Text>
+            <Text style={styles.dateText}>Clinician: Dr Bdizzle</Text>
           </View>
         </View>
       </View>
@@ -233,17 +323,30 @@ export default function ClientPage() {
                   <Text style={styles.methodTitle}>{method}</Text>
                   <Text style={styles.methodDescription}>
                     {method === 'EEG' && 'Brain activity monitoring'}
-                    {method === 'MRI' && 'Detailed body imaging'}
-                    {method === 'Blood Test' && 'Laboratory analysis'}
+                    {method === 'Muscle Cuff' && 'Muscle pressure measurement'}
+                    {method === 'Pressure Plate' && 'Force and balance analysis'}
                   </Text>
                 </View>
               </View>
             </View>
           )}
 
-          {/* Form Fields */}
+          {/* Demographics Section */}
+          {renderSectionHeader('Basic Information & Demographics')}
           <View style={styles.formContainer}>
-            {fields.map(renderField)}
+            {demographicFields.map(renderField)}
+          </View>
+
+          {/* Anthropometric Section */}
+          {renderSectionHeader('Anthropometric Measurements')}
+          <View style={styles.formContainer}>
+            {anthropometricFields.map(renderField)}
+          </View>
+
+          {/* Study Information Section */}
+          {renderSectionHeader('Study Information')}
+          <View style={styles.formContainer}>
+            {studyFields.map(renderField)}
           </View>
 
           {/* Method Info Cards */}
@@ -260,18 +363,18 @@ export default function ClientPage() {
               </View>
               
               <View style={[styles.infoCard, styles.infoCardBlue]}>
-                <MaterialCommunityIcons name="brain" size={24} color="#4A90E2" />
+                <MaterialCommunityIcons name="arm-flex" size={24} color="#4A90E2" />
                 <View style={styles.infoCardText}>
                   <Text style={styles.infoCardTitle}>Muscle Cuff</Text>
-                  <Text style={styles.infoCardDescription}>High-resolution magnetic imaging</Text>
+                  <Text style={styles.infoCardDescription}>Muscle pressure measurement</Text>
                 </View>
               </View>
               
               <View style={[styles.infoCard, styles.infoCardRed]}>
-                <FontAwesome5 name="tint" size={24} color="#D0021B" />
+                <FontAwesome5 name="weight" size={24} color="#D0021B" />
                 <View style={styles.infoCardText}>
                   <Text style={styles.infoCardTitle}>Pressure Plate</Text>
-                  <Text style={styles.infoCardDescription}>Comprehensive blood testing</Text>
+                  <Text style={styles.infoCardDescription}>Force and balance analysis</Text>
                 </View>
               </View>
             </View>
@@ -350,25 +453,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F8FAFC',
   },
-  backButton: {
-    position: 'absolute',
-    top: Platform.OS === 'ios' ? 60 : 40,
-    left: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 8,
-    zIndex: 1000,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  backText: {
-    fontSize: 16,
-    color: '#4A90E2',
-    fontWeight: '600',
-    marginLeft: 8,
-  },
   keyboardContainer: {
     flex: 1,
   },
@@ -426,6 +510,21 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 16,
   },
+  sectionHeader: {
+    marginBottom: 16,
+    marginTop: 8,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000000',
+    marginBottom: 8,
+  },
+  sectionDivider: {
+    height: 2,
+    backgroundColor: '#E2E8F0',
+    borderRadius: 1,
+  },
   methodCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
@@ -468,6 +567,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#333333',
     marginBottom: 8,
+  },
+  unitText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#4A90E2',
   },
   rangeText: {
     fontSize: 12,
