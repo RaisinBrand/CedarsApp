@@ -13,7 +13,9 @@ import {
   StatusBar,
 } from 'react-native';
 import { FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
-
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../navigationTypes';
 // Generic field metadata
 type Field = {
   key: string;
@@ -66,6 +68,7 @@ const sexualOrientationOptions = [
 ];
 
 export default function ClientPage() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   // Selected study method
   const [method, setMethod] = useState<string>('');
   const [fields, setFields] = useState<Field[]>([]);
@@ -213,7 +216,7 @@ export default function ClientPage() {
       case 'dropdown':
         return renderDropdown(field);
       case 'date':
-        const val = values[field.key] || '';
+        const formattedVal = values[field.key] || '';
         return (
           <View key={field.key} style={styles.fieldContainer}>
             <Text style={styles.label}>{field.label}</Text>
@@ -222,7 +225,7 @@ export default function ClientPage() {
               keyboardType="numeric"
               maxLength={10}                
               placeholder="YYYY-MM-DD"
-              value={val}
+              value={formattedVal}
               onChangeText={text => {
                 const digits = text.replace(/\D/g, '').slice(0, 8);
                 let formatted = digits;
@@ -283,7 +286,11 @@ export default function ClientPage() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-      
+      {/* Back Button */}
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('SelectSetting')}>
+        <FontAwesome5 name="arrow-left" size={20} color="#4A90E2" />
+        <Text style={styles.backText}>Back</Text>
+      </TouchableOpacity>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerTop}>
@@ -750,5 +757,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666666',
     fontWeight: '500',
+  },
+  backButton: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 60 : 40,
+    left: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+    zIndex: 1000,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  backText: {
+    fontSize: 16,
+    color: '#4A90E2',
+    fontWeight: '600',
+    marginLeft: 8,
   },
 });

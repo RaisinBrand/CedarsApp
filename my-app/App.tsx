@@ -23,10 +23,10 @@ export default function App() {
   return (
     <NavigationContainer>
       <SafeAreaView style={styles.container}>
-        <Stack.Navigator initialRouteName='Clinic'
+        <Stack.Navigator initialRouteName='CurrentStudy'
           screenOptions={{
             headerShown: false,
-            animation: 'slide_from_right',
+            animation: 'fade_from_bottom',
           }}
         >
           <Stack.Screen name="Login" component={LoginScreen} />
